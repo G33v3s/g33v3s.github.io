@@ -118,30 +118,45 @@
 
         .time-input-group {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 8px;
         }
 
         .time-input {
-            padding: 8px;
-            font-size: 1.2em;
-            border: 2px solid white;
-            border-radius: 6px;
-            width: 80px;
-            text-align: center;
-            font-weight: bold;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: white;
+            outline: none;
+            -webkit-appearance: none;
         }
 
-        .time-input:focus {
-            outline: none;
-            border-color: #ffd700;
+        .time-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffd700;
+            cursor: pointer;
+            border: 3px solid white;
+        }
+
+        .time-input::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #ffd700;
+            cursor: pointer;
+            border: 3px solid white;
         }
 
         .time-label {
             color: white;
-            font-size: 0.9em;
-            font-weight: 600;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 8px;
         }
 
         .button-group {
@@ -209,16 +224,17 @@
         <div class="time-control">
             <label>Time Remaining</label>
             <div class="time-input-group">
+                <span class="time-label" id="timeValue">10 min</span>
                 <input 
-                    type="number" 
+                    type="range" 
                     id="timeInput" 
                     class="time-input" 
                     min="0" 
                     max="10" 
                     step="0.5" 
                     value="10"
+                    oninput="updateTimeDisplay()"
                 >
-                <span class="time-label">min</span>
             </div>
             <div class="button-group">
                 <button class="submit-btn" onclick="submitTime()">Calculate Time</button>
@@ -252,6 +268,13 @@
 
         const INITIAL_TIME = 10; // Initial time in minutes
         let lastTimeValue = INITIAL_TIME; // Track the last time value
+
+        // Update time display when slider changes
+        function updateTimeDisplay() {
+            const timeInput = document.getElementById('timeInput');
+            const timeValue = document.getElementById('timeValue');
+            timeValue.textContent = `${timeInput.value} min`;
+        }
 
         // Format time display for total minutes
         function formatTime(minutes) {
