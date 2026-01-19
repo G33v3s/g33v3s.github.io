@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotation Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+
+        .person-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            margin-bottom: 6px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .person-row:hover {
+            background: #e9ecef;
+        }
+
+        .person-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .person-name {
+            font-weight: 600;
+            color: #333;
+            min-width: 60px;
+            font-size: 1.1em;
+        }
+
+        .time-display {
+            color: #666;
+            font-size: 0.95em;
+            min-width: 60px;
+        }
+
+        .status-btn {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 55px;
+            font-size: 0.85em;
+        }
+
+        .status-btn.out {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-btn.out:hover {
+            background: #c82333;
+        }
+
+        .status-btn.in {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-btn.in:hover {
+            background: #218838;
+        }
+
+        .time-control {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+        }
+
+        .time-control label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .time-input {
+            padding: 8px;
+            font-size: 1.2em;
+            border: 2px solid white;
+            border-radius: 6px;
+            width: 80px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .time-input:focus {
+            outline: none;
+            border-color: #ffd700;
+        }
+
+        .time-label {
+            color: white;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .submit-btn {
+            padding: 8px 16px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .submit-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        .next-quarter-btn {
+            padding: 8px 16px;
+            background: #ffc107;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .next-quarter-btn:hover {
+            background: #ffb300;
+        }
+
+        .next-quarter-btn:active {
+            transform: scale(0.95);
+        }
+
+        .stats {
+            margin-bottom: 12px;
+            padding: 8px;
+            background: #e7f3ff;
+            border-radius: 6px;
+            text-align: center;
+            color: #333;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="time-control">
+            <label>Time Remaining</label>
+            <div class="time-input-group">
+                <input 
+                    type="number" 
+                    id="timeInput" 
+                    class="time-input" 
+                    min="0" 
+                    max="10" 
+                    step="0.5" 
+                    value="10"
+                >
+                <span class="time-label">min</span>
+            </div>
+            <div class="button-group">
+                <button class="submit-btn" onclick="submitTime()">Calculate Time</button>
+                <button class="next-quarter-btn" onclick="nextQuarter()">Next Quarter</button>
+            </div>
+        </div>
+
+        <div class="stats" id="stats">
+            Total people IN: <strong>0</strong>
+        </div>
+
+        <div id="peopleList"></div>
+    </div>
+
+    <script>
+        // Initialize data
+        const people = [
+            { name: 'Adam', status: 'OUT', totalMinutes: 0 },
+            { name: 'Anes', status: 'OUT', totalMinutes: 0 },
+            { name: 'Danny', status: 'OUT', totalMinutes: 0 },
+            { name: 'Emmerson', status: 'OUT', totalMinutes: 0 },
+            { name: 'Grant', status: 'OUT', totalMinutes: 0 },
+            { name: 'James', status: 'OUT', totalMinutes: 0 },
+            { name: 'Jawad', status: 'OUT', totalMinutes: 0 },
+            { name: 'Kris', status: 'OUT', totalMinutes: 0 },
+            { name: 'Oleksii', status: 'OUT', totalMinutes: 0 },
+            { name: 'Milos', status: 'OUT', totalMinutes: 0 },
+            { name: 'Richard', status: 'OUT', totalMinutes: 0 },
+            { name: 'Zain', status: 'OUT', totalMinutes: 0 }
+        ];
+
+        const INITIAL_TIME = 10; // Initial time in minutes
+        let lastTimeValue = INITIAL_TIME; // Track the last time value
+
+        // Format time display for total minutes
+        function formatTime(minutes) {
+            if (minutes === 0) return '0m';
+            
+            const hours = Math.floor(minutes / 60);
+            const mins = Math.floor(minutes % 60);
+            
+            if (hours > 0 && mins > 0) {
+                return `${hours}h ${mins}m`;
+            } else if (hours > 0) {
+                return `${hours}h`;
+            } else {
+                return `${mins}m`;
+            }
+        }
+
+        // Toggle person status
+        function toggleStatus(index) {
+            people[index].status = people[index].status === 'IN' ? 'OUT' : 'IN';
+            render();
+        }
+
+        // Next Quarter - reset time to initial value
+        function nextQuarter() {
+            const timeInput = document.getElementById('timeInput');
+            timeInput.value = INITIAL_TIME;
+            lastTimeValue = INITIAL_TIME;
+        }
+
+        // Submit time to people who are IN
+        function submitTime() {
+            const timeInput = document.getElementById('timeInput');
+            const timeRemaining = parseFloat(timeInput.value);
+            
+            if (isNaN(timeRemaining) || timeRemaining < 0 || timeRemaining > 10) {
+                return;
+            }
+
+            // Calculate elapsed time since last button press
+            const elapsedTime = lastTimeValue - timeRemaining;
+            
+            if (elapsedTime <= 0) {
+                return;
+            }
+
+            let count = 0;
+            people.forEach(person => {
+                if (person.status === 'IN') {
+                    person.totalMinutes += elapsedTime;
+                    count++;
+                }
+            });
+
+            // Update last time value for next calculation
+            lastTimeValue = timeRemaining;
+
+            render();
+        }
+
+        // Render the UI
+        function render() {
+            const peopleList = document.getElementById('peopleList');
+            peopleList.innerHTML = '';
+
+            let inCount = 0;
+
+            people.forEach((person, index) => {
+                if (person.status === 'IN') inCount++;
+
+                const row = document.createElement('div');
+                row.className = 'person-row';
+                row.innerHTML = `
+                    <div class="person-info">
+                        <span class="person-name">${person.name}</span>
+                        <span class="time-display">Total: ${formatTime(person.totalMinutes)}</span>
+                    </div>
+                    <button 
+                        class="status-btn ${person.status.toLowerCase()}" 
+                        onclick="toggleStatus(${index})"
+                    >
+                        ${person.status}
+                    </button>
+                `;
+                peopleList.appendChild(row);
+            });
+
+            document.getElementById('stats').innerHTML = 
+                `Total people IN: <strong>${inCount}</strong>`;
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
