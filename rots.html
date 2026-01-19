@@ -68,6 +68,23 @@
             color: #666;
             font-size: 0.95em;
             min-width: 60px;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .time-display:hover {
+            background: #dee2e6;
+        }
+
+        .time-edit-input {
+            width: 70px;
+            padding: 4px;
+            font-size: 0.95em;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            text-align: center;
         }
 
         .status-btn {
@@ -294,8 +311,33 @@
 
         // Toggle person status
         function toggleStatus(index) {
-            people[index].status = people[index].status === 'IN' ? 'OUT' : 'IN';
+            const person = people[index];
+            
+            if (person.status === 'OUT') {
+                // Check if already at max capacity
+                const currentInCount = people.filter(p => p.status === 'IN').length;
+                if (currentInCount >= 5) {
+                    alert('Maximum of 5 people can be IN at the same time');
+                    return;
+                }
+                person.status = 'IN';
+            } else {
+                person.status = 'OUT';
+            }
+            
             render();
+        }
+
+        // Edit individual person's total time
+        function editTime(index) {
+            const person = people[index];
+            const currentMinutes = person.totalMinutes;
+            const newMinutes = prompt(`Edit total time for ${person.name}\n\nCurrent: ${formatTime(currentMinutes)}\nEnter new total in minutes:`, currentMinutes);
+            
+            if (newMinutes !== null && !isNaN(parseFloat(newMinutes))) {
+                person.totalMinutes = parseFloat(newMinutes);
+                render();
+            }
         }
 
         // Next Quarter - reset time to initial value
@@ -350,7 +392,7 @@
                 row.innerHTML = `
                     <div class="person-info">
                         <span class="person-name">${person.name}</span>
-                        <span class="time-display">Total: ${formatTime(person.totalMinutes)}</span>
+                        <span class="time-display" onclick="editTime(${index})" title="Click to edit">Total: ${formatTime(person.totalMinutes)}</span>
                     </div>
                     <button 
                         class="status-btn ${person.status.toLowerCase()}" 
